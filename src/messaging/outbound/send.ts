@@ -14,6 +14,7 @@ import { runWithMessageUnavailableGuard } from '../../core/message-unavailable';
 import type { MentionInfo } from '../types';
 import { optimizeMarkdownStyle } from '../../card/markdown-style';
 import { buildMentionedMessage, buildMentionedCardContent } from '../inbound/mention';
+import { parseMentions, relayToBot } from '../relay/bot-relay';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -179,10 +180,24 @@ export async function sendMessageFeishu(params: SendFeishuMessageParams): Promis
         }),
     });
 
-    return {
+    const result = {
       messageId: response?.data?.message_id ?? '',
       chatId: response?.data?.chat_id ?? '',
     };
+
+    // Bot Relay 触发
+    if (result.messageId) {
+      await triggerBotRelay({
+        cfg,
+        accountId,
+        to,
+        text: contentPayload,
+        messageId: result.messageId,
+        chatId: result.chatId,
+      });
+    }
+
+    return result;
   }
 
   // Send as a new message.
@@ -205,10 +220,24 @@ export async function sendMessageFeishu(params: SendFeishuMessageParams): Promis
     },
   });
 
-  return {
+  const result = {
     messageId: response?.data?.message_id ?? '',
     chatId: response?.data?.chat_id ?? '',
   };
+
+  // Bot Relay 触发
+  if (result.messageId) {
+    await triggerBotRelay({
+      cfg,
+      accountId,
+      to,
+      text: contentPayload,
+      messageId: result.messageId,
+      chatId: result.chatId,
+    });
+  }
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -247,10 +276,24 @@ export async function sendCardFeishu(params: SendFeishuCardParams): Promise<Feis
         }),
     });
 
-    return {
+    const result = {
       messageId: response?.data?.message_id ?? '',
       chatId: response?.data?.chat_id ?? '',
     };
+
+    // Bot Relay 触发
+    if (result.messageId) {
+      await triggerBotRelay({
+        cfg,
+        accountId,
+        to,
+        text: contentPayload,
+        messageId: result.messageId,
+        chatId: result.chatId,
+      });
+    }
+
+    return result;
   }
 
   const target = normalizeFeishuTarget(to);
@@ -272,10 +315,24 @@ export async function sendCardFeishu(params: SendFeishuCardParams): Promise<Feis
     },
   });
 
-  return {
+  const result = {
     messageId: response?.data?.message_id ?? '',
     chatId: response?.data?.chat_id ?? '',
   };
+
+  // Bot Relay 触发
+  if (result.messageId) {
+    await triggerBotRelay({
+      cfg,
+      accountId,
+      to,
+      text: contentPayload,
+      messageId: result.messageId,
+      chatId: result.chatId,
+    });
+  }
+
+  return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -487,4 +544,53 @@ export async function editMessageFeishu(params: {
         },
       }),
   });
+}
+
+// ---------------------------------------------------------------------------
+// triggerBotRelay (Bot Relay 触发)
+// ---------------------------------------------------------------------------
+
+/**
+ * 触发 Bot Relay - 检查消息中的 @mention 并 relay 到目标 Bot
+ *
+ * @param params - Relay 触发参数
+ */
+async function triggerBotRelay(params: {
+  cfg: ClawdbotConfig;
+  accountId: string | undefined;
+  to: string;
+  text: string;
+  messageId: string;
+  chatId: string;
+}): Promise<void> {
+  const { cfg, accountId, to, text, messageId, chatId } = params;
+
+  // 检查 relay 是否启用（全局配置）
+  const relayEnabled = cfg?.channels?.feishu?.botRelay?.enabled ?? false;
+  if (!relayEnabled) return;
+
+  // 解析 @mention
+  const mentions = parseMentions(text);
+  if (mentions.length === 0) return;
+
+  // 获取当前 Bot 的 accountId
+  const currentAccountId = accountId || 'default';
+
+  // 对每个 @mention 触发 relay
+  for (const mention of mentions) {
+    await relayToBot({
+      cfg,
+      senderAccountId: currentAccountId,
+      targetOpenId: mention.openId,
+      chatId,
+      messageId,
+      content: text,
+      chatType: to.startsWith('oc_') ? 'group' : 'p2p',
+      relayConfig: {
+        enabled: true,
+        maxRelayDepth: cfg?.channels?.feishu?.botRelay?.maxDepth ?? 3,
+        currentDepth: 0
+      }
+    });
+  }
 }

@@ -128,6 +128,13 @@ const DmConfigSchema = z
   })
   .optional();
 
+const BotRelaySchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    maxDepth: z.number().optional(),
+  })
+  .optional();
+
 // ---------------------------------------------------------------------------
 // Group schema
 // ---------------------------------------------------------------------------
@@ -183,6 +190,7 @@ export const FeishuAccountConfigSchema = z.object({
   reactionNotifications: ReactionNotificationModeSchema,
   threadSession: z.boolean().optional(),
   uat: UATConfigSchema,
+  botRelay: BotRelaySchema,
 });
 
 // ---------------------------------------------------------------------------

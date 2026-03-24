@@ -22,6 +22,7 @@ import {
   handleBotMembershipEvent,
   handleCardActionEvent,
 } from './event-handlers';
+import { botRegistry } from '../messaging/relay/bot-registry';
 
 const mlog = larkLogger('channel/monitor');
 
@@ -135,6 +136,9 @@ export async function monitorFeishuProvider(opts: MonitorFeishuOpts = {}): Promi
   // can access cross-account information even when running inside an
   // account-scoped config context.
   LarkClient.setGlobalConfig(cfg);
+
+  // 初始化 Bot 注册表（只初始化一次）
+  await botRegistry.initialize(cfg);
 
   const log = opts.runtime?.log ?? ((...args: unknown[]) => mlog.info(args.map(String).join(' ')));
 

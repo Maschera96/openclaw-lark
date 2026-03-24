@@ -17,6 +17,7 @@ import { optimizeMarkdownStyle } from '../../card/markdown-style';
 import { uploadAndSendMediaLark } from './media';
 import { formatLarkError } from '../../core/api-error';
 import { larkLogger } from '../../core/lark-logger';
+import { parseMentions, relayToBot } from '../relay/bot-relay';
 
 const log = larkLogger('outbound/deliver');
 
@@ -79,19 +80,66 @@ function prepareTextForLark(cfg: ClawdbotConfig, text: string, accountId?: strin
 }
 
 /**
+ * 触发 Bot Relay - 检查消息中的 @mention 并 relay 到目标 Bot
+ */
+async function triggerBotRelay(params: {
+  cfg: ClawdbotConfig;
+  accountId: string | undefined;
+  to: string;
+  text: string;
+  messageId: string;
+  chatId: string;
+}): Promise<void> {
+  const { cfg, accountId, to, text, messageId, chatId } = params;
+
+  // 检查 relay 是否启用（全局配置）
+  const relayEnabled = cfg?.channels?.feishu?.botRelay?.enabled ?? false;
+  log.debug(`triggerBotRelay: enabled=${relayEnabled}, accountId=${accountId}`);
+  if (!relayEnabled) return;
+
+  // 解析 @mention
+  const mentions = parseMentions(text);
+  log.debug(`triggerBotRelay: parsed ${mentions.length} mentions from text`);
+  if (mentions.length === 0) return;
+
+  // 获取当前 Bot 的 accountId
+  const currentAccountId = accountId || 'default';
+
+  // 对每个 @mention 触发 relay
+  for (const mention of mentions) {
+    await relayToBot({
+      cfg,
+      senderAccountId: currentAccountId,
+      targetOpenId: mention.openId,
+      chatId,
+      messageId,
+      content: text,
+      chatType: to.startsWith('oc_') ? 'group' : 'p2p',
+      relayConfig: {
+        enabled: true,
+        maxRelayDepth: cfg?.channels?.feishu?.botRelay?.maxDepth ?? 3,
+        currentDepth: 0
+      }
+    });
+  }
+}
+
+/**
  * Unified IM message sender — handles both reply and create paths for any
  * `msg_type`.  Replaces the former `replyPostMessage`, `createPostMessage`,
  * `replyInteractiveMessage` and `createInteractiveMessage` helpers.
  */
 async function sendImMessage(params: {
   client: ReturnType<typeof LarkClient.fromCfg>['sdk'];
+  cfg: ClawdbotConfig;
   to: string;
   content: string;
   msgType: 'post' | 'interactive';
   replyToMessageId?: string;
   replyInThread?: boolean;
+  accountId?: string;
 }): Promise<FeishuSendResult> {
-  const { client, to, content, msgType, replyToMessageId, replyInThread } = params;
+  const { client, cfg, to, content, msgType, replyToMessageId, replyInThread, accountId } = params;
 
   // --- Reply path ---
   if (replyToMessageId) {
@@ -106,6 +154,19 @@ async function sendImMessage(params: {
       chatId: response?.data?.chat_id ?? '',
     };
     log.debug(`reply sent: messageId=${result.messageId}`);
+
+    // 触发 Bot Relay（在回复消息后）
+    if (result.messageId) {
+      await triggerBotRelay({
+        cfg,
+        accountId,
+        to,
+        text: content,
+        messageId: result.messageId,
+        chatId: result.chatId,
+      });
+    }
+
     return result;
   }
 
@@ -131,6 +192,19 @@ async function sendImMessage(params: {
     chatId: response?.data?.chat_id ?? '',
   };
   log.debug(`message created: messageId=${result.messageId}`);
+
+  // 触发 Bot Relay（在发送消息后）
+  if (result.messageId) {
+    await triggerBotRelay({
+      cfg,
+      accountId,
+      to,
+      text: content,
+      messageId: result.messageId,
+      chatId: result.chatId,
+    });
+  }
+
   return result;
 }
 
@@ -254,7 +328,7 @@ export async function sendTextLark(params: SendTextLarkParams): Promise<FeishuSe
   const processedText = prepareTextForLark(cfg, text, accountId);
   const content = buildPostContent(processedText);
 
-  return sendImMessage({ client, to, content, msgType: 'post', replyToMessageId, replyInThread });
+  return sendImMessage({ client, cfg, to, content, msgType: 'post', replyToMessageId, replyInThread, accountId });
 }
 
 // ---------------------------------------------------------------------------
@@ -332,7 +406,7 @@ export async function sendCardLark(params: SendCardLarkParams): Promise<FeishuSe
   const content = JSON.stringify(card);
 
   try {
-    return await sendImMessage({ client, to, content, msgType: 'interactive', replyToMessageId, replyInThread });
+    return await sendImMessage({ client, cfg, to, content, msgType: 'interactive', replyToMessageId, replyInThread, accountId });
   } catch (err) {
     const detail = formatLarkError(err);
     log.error(`sendCardLark failed: ${detail}`);
