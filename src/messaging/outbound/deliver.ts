@@ -42,6 +42,9 @@ function buildPostContent(text: string): string {
  *   `<at user_id="ou_xxx">name</at>`   — mention a user
  *   `<at user_id="all"></at>`           — mention everyone
  *
+ * Works for both text messages and JSON card content.
+ * The regex handles both regular quotes and JSON-escaped quotes (\").
+ *
  * Common AI mistakes this function fixes:
  *   `<at id=all></at>`           → `<at user_id="all"></at>`
  *   `<at id="ou_xxx"></at>`      → `<at user_id="ou_xxx"></at>`
@@ -329,7 +332,10 @@ export async function sendCardLark(params: SendCardLarkParams): Promise<FeishuSe
   log.info(`sendCardLark: target=${to}, cardVersion=${version}`);
 
   const client = LarkClient.fromCfg(cfg, accountId).sdk;
-  const content = JSON.stringify(card);
+  // Normalize mentions in card content for bot-to-bot relay support
+  const cardStr = JSON.stringify(card);
+  const content = normalizeAtMentions(cardStr);
+  console.log(`[PLUGIN] sendCardLark: normalized=${content.includes('user_id')}, result=${content.substring(0, 200)}...`);
 
   try {
     return await sendImMessage({ client, to, content, msgType: 'interactive', replyToMessageId, replyInThread });
