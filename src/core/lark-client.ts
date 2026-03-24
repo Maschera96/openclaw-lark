@@ -21,7 +21,7 @@ import type { LarkBrand, LarkAccount, FeishuProbeResult } from './types';
 import { getLarkAccount } from './accounts';
 // NOTE: clearUserNameCache is lazy-imported in clearCache() to break a
 // circular dependency with user-name-cache.ts (which imports LarkClient).
-import { clearChatInfoCache } from './chat-info-cache';
+import { clearChatInfoCache, injectLarkClient } from './chat-info-cache';
 import { getUserAgent } from './version';
 import { larkLogger } from './lark-logger';
 
@@ -469,6 +469,11 @@ export class LarkClient {
     });
   }
 }
+
+// Inject LarkClient reference into chat-info-cache to break the circular
+// dependency (chat-info-cache needs LarkClient.fromCfg but lark-client
+// imports clearChatInfoCache from chat-info-cache).
+injectLarkClient(LarkClient);
 
 // ---------------------------------------------------------------------------
 // Config resolution helper
