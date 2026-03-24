@@ -25,6 +25,30 @@ import { fetchCardContent, createFetchSubMessages, createParseResolveNames } fro
 const log = larkLogger('inbound/parse');
 
 // ---------------------------------------------------------------------------
+// Helpers: parse mentions from content (for bot-to-bot relay)
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse @mention tags from message content.
+ *
+ * This is needed for bot-to-bot relay support because Feishu API
+ * does not populate the mentions array when one bot mentions another.
+ *
+ * Parses `<at user_id="ou_xxx">name</at>` format and returns
+ * open_id values.
+ */
+function parseMentionsFromContent(content: string): string[] {
+  const mentions: string[] = [];
+  // Match <at user_id="ou_xxx"> or <at id="ou_xxx"> (legacy format)
+  const regex = /<at\s+(?:user_id|id)\s*=\s*["']([^"']+)["']\s*>/gi;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    mentions.push(match[1]);
+  }
+  return mentions;
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -48,6 +72,9 @@ export async function parseMessageEvent(
   const mentionMap = new Map<string, MentionInfo>();
   const mentionList: MentionInfo[] = [];
 
+  // Track which open_ids are already in mentions map (to avoid duplicates)
+  const existingOpenIds = new Set<string>();
+
   for (const m of event.message.mentions ?? []) {
     const openId = m.id?.open_id ?? '';
     if (!openId) continue;
@@ -60,6 +87,40 @@ export async function parseMessageEvent(
     };
     mentionMap.set(m.key, info);
     mentionList.push(info);
+    existingOpenIds.add(openId);
+  }
+
+  // 1b. Parse mentions from content for bot-to-bot relay support
+  //
+  // Feishu API does not populate the mentions array when one bot mentions another.
+  // We parse <at user_id="ou_xxx"> tags from message content to detect
+  // bot mentions that would otherwise be missed.
+  if (botOpenId) {
+    const contentMentions = parseMentionsFromContent(event.message.content);
+    log.debug(`[BOT-RELAY] botOpenId=${botOpenId}, contentMentions=${JSON.stringify(contentMentions)}`);
+    for (const openId of contentMentions) {
+      // Skip if already in mentions (avoid duplicates)
+      if (existingOpenIds.has(openId)) {
+        log.debug(`[BOT-RELAY] Skipping duplicate mention: ${openId}`);
+        continue;
+      }
+
+      // Only add if it mentions this bot (bot-to-bot relay case)
+      if (openId === botOpenId) {
+        const info: MentionInfo = {
+          key: `@_${mentionList.length}`,
+          openId,
+          name: 'Bot',
+          isBot: true,
+        };
+        mentionMap.set(info.key, info);
+        mentionList.push(info);
+        existingOpenIds.add(openId);
+        log.info(`[BOT-RELAY] Added bot-to-bot mention from content! openId=${openId}`);
+      }
+    }
+  } else {
+    log.debug(`[BOT-RELAY] No botOpenId provided, skipping content parsing`);
   }
 
   // Build reverse map for O(1) openId lookup

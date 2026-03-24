@@ -67,15 +67,18 @@ export function formatMentionAllForText(): string {
 
 /**
  * Format a mention for a Feishu Interactive Card.
- * @returns e.g. `<at id=ou_xxx></at>`
+ * @returns e.g. `<at user_id="ou_xxx"></at>`
+ *
+ * Note: Must use user_id format (not id) for bot-to-bot relay support.
+ * See: https://global.v2ex.co/t/1194837
  */
 export function formatMentionForCard(target: MentionInfo): string {
-  return `<at id=${target.openId}></at>`;
+  return `<at user_id="${target.openId}"></at>`;
 }
 
 /** Format an @everyone mention for card. */
 export function formatMentionAllForCard(): string {
-  return `<at id=all></at>`;
+  return `<at user_id="all"></at>`;
 }
 
 // ---------------------------------------------------------------------------
