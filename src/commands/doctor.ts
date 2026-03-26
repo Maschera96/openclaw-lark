@@ -54,71 +54,74 @@ export type DoctorLocale = FeishuLocale;
 // I18n text map
 // ---------------------------------------------------------------------------
 
-const T: Record<DoctorLocale, {
-  // maskSecret
-  notSet: string;
-  // checkBasicInfo
-  legacyNotDisabled: string;
-  legacyRunCmds: string;
-  legacyDisabled: string;
-  credentials: string;
-  accountEnabled: string;
-  apiOk: string;
-  apiFail: string;
-  apiError: string;
-  // checkToolsProfile
-  toolsOk: string;
-  toolsWarnProfile: (profile: string) => string;
-  toolsDocRef: string;
-  // checkAppPermissions
-  allPermsGranted: (count: number) => string;
-  missingPermsPrefix: string;
-  missingPermsSuffix: string;
-  cannotQueryPerms: string;
-  cannotQueryPermsGeneric: string;
-  suggestCheckPerm: string;
-  adminApply: string;
-  apply: string;
-  // generatePermissionTable
-  permTableHeader: string;
-  // checkUserPermissions
-  authStatusLabel: string;
-  userTotal: string;
-  valid: string;
-  needRefresh: string;
-  expired: string;
-  tokenRefreshLabel: string;
-  tokenRefreshOn: string;
-  tokenRefreshOff: string;
-  noUserAuth: string;
-  noUserAuthDesc: string;
-  permCompareLabel: string;
-  permInsufficient: string;
-  userCountLabel: string;
-  noAuthLabel: string;
-  appMissingUserPerms: (count: number) => string;
-  permCompareSummary: (appCount: number, total: number, userPart: string) => string;
-  userReauth: string;
-  userNeedsOAuth: string;
-  userPermFailed: string;
-  userPermFailedNoSelfManage: string;
-  // runFeishuDoctor (main report)
-  reportTitle: string;
-  pluginVersionLabel: string;
-  diagTimeLabel: string;
-  noAccounts: string;
-  accountNotFoundPrefix: string;
-  enabledAccountsLabel: string;
-  toolsCheckPass: string;
-  toolsCheckWarn: string;
-  accountPrefix: string;
-  envCheckPass: string;
-  envCheckFail: string;
-  appPermPass: string;
-  appPermFail: string;
-  userPermPass: string;
-  userPermFail: string;
-}> = {
+const T: Record<
+  DoctorLocale,
+  {
+    // maskSecret
+    notSet: string;
+    // checkBasicInfo
+    legacyNotDisabled: string;
+    legacyRunCmds: string;
+    legacyDisabled: string;
+    credentials: string;
+    accountEnabled: string;
+    apiOk: string;
+    apiFail: string;
+    apiError: string;
+    // checkToolsProfile
+    toolsOk: string;
+    toolsWarnProfile: (profile: string) => string;
+    toolsDocRef: string;
+    // checkAppPermissions
+    allPermsGranted: (count: number) => string;
+    missingPermsPrefix: string;
+    missingPermsSuffix: string;
+    cannotQueryPerms: string;
+    cannotQueryPermsGeneric: string;
+    suggestCheckPerm: string;
+    adminApply: string;
+    apply: string;
+    // generatePermissionTable
+    permTableHeader: string;
+    // checkUserPermissions
+    authStatusLabel: string;
+    userTotal: string;
+    valid: string;
+    needRefresh: string;
+    expired: string;
+    tokenRefreshLabel: string;
+    tokenRefreshOn: string;
+    tokenRefreshOff: string;
+    noUserAuth: string;
+    noUserAuthDesc: string;
+    permCompareLabel: string;
+    permInsufficient: string;
+    userCountLabel: string;
+    noAuthLabel: string;
+    appMissingUserPerms: (count: number) => string;
+    permCompareSummary: (appCount: number, total: number, userPart: string) => string;
+    userReauth: string;
+    userNeedsOAuth: string;
+    userPermFailed: string;
+    userPermFailedNoSelfManage: string;
+    // runFeishuDoctor (main report)
+    reportTitle: string;
+    pluginVersionLabel: string;
+    diagTimeLabel: string;
+    noAccounts: string;
+    accountNotFoundPrefix: string;
+    enabledAccountsLabel: string;
+    toolsCheckPass: string;
+    toolsCheckWarn: string;
+    accountPrefix: string;
+    envCheckPass: string;
+    envCheckFail: string;
+    appPermPass: string;
+    appPermFail: string;
+    userPermPass: string;
+    userPermFail: string;
+  }
+> = {
   zh_cn: {
     notSet: '(未设置)',
     legacyNotDisabled:
@@ -168,7 +171,8 @@ const T: Record<DoctorLocale, {
     userReauth: '💡 用户需要重新授权以获得完整权限，可以向机器人发送消息 "**/feishu auth**"',
     userNeedsOAuth: '💡 用户需要进行 OAuth 授权，可以向机器人发送消息 "**/feishu auth**"',
     userPermFailed: '用户权限检查失败',
-    userPermFailedNoSelfManage: '用户权限检查失败：无法查询应用权限。原因：未开通 application:application:self_manage 权限',
+    userPermFailedNoSelfManage:
+      '用户权限检查失败：无法查询应用权限。原因：未开通 application:application:self_manage 权限',
     reportTitle: '### 飞书插件诊断',
     pluginVersionLabel: '插件版本',
     diagTimeLabel: '诊断时间',
@@ -223,22 +227,26 @@ const T: Record<DoctorLocale, {
     tokenRefreshOn: '✓ Auto-refresh enabled (1/1 users)',
     tokenRefreshOff: '✗ Auto-refresh not enabled. Token will expire in 2 hours',
     noUserAuth: '⚠️ **No User Authorization**',
-    noUserAuthDesc: 'No user has authorized via OAuth yet. The authorization flow will be triggered automatically when a user first uses a feature requiring user identity.',
+    noUserAuthDesc:
+      'No user has authorized via OAuth yet. The authorization flow will be triggered automatically when a user first uses a feature requiring user identity.',
     permCompareLabel: '**Permission Comparison**',
     permInsufficient: '**Insufficient User Permissions**',
     userCountLabel: 'authorized',
     noAuthLabel: 'not authorized',
-    appMissingUserPerms: (count: number) => `💡 App is missing ${count} user-identity permissions. Admin needs to apply`,
+    appMissingUserPerms: (count: number) =>
+      `💡 App is missing ${count} user-identity permissions. Admin needs to apply`,
     permCompareSummary: (appCount: number, total: number, userPart: string) =>
       `App **${appCount}/${total}** granted, User **${userPart}**`,
     userReauth: '💡 User needs to re-authorize for full permissions. Send message to bot: "**/feishu auth**"',
     userNeedsOAuth: '💡 User needs OAuth authorization. Send message to bot: "**/feishu auth**"',
     userPermFailed: 'User permission check failed',
-    userPermFailedNoSelfManage: 'User permission check failed: Unable to query app permissions. Reason: Missing application:application:self_manage permission',
+    userPermFailedNoSelfManage:
+      'User permission check failed: Unable to query app permissions. Reason: Missing application:application:self_manage permission',
     reportTitle: '### Feishu Plugin Diagnostics',
     pluginVersionLabel: 'Plugin version',
     diagTimeLabel: 'Diagnosis time',
-    noAccounts: '❌ **Error**: No enabled Feishu accounts found\n\nPlease configure and enable a Feishu account in the OpenClaw configuration.',
+    noAccounts:
+      '❌ **Error**: No enabled Feishu accounts found\n\nPlease configure and enable a Feishu account in the OpenClaw configuration.',
     accountNotFoundPrefix: '❌ **Error**: Account not found',
     enabledAccountsLabel: 'Currently enabled accounts',
     toolsCheckPass: '#### ✅ Tool Configuration Check Passed',
@@ -520,7 +528,7 @@ async function checkUserPermissions(
 
     // 获取应用开通的支持 user token 的权限
     const appUserScopes = await getAppGrantedScopes(sdk, appId, 'user');
-    let  allScopes = getAllToolScopes();
+    let allScopes = getAllToolScopes();
     allScopes = filterSensitiveScopes(allScopes);
     const appGrantedCount = appUserScopes.filter((s) => allScopes.includes(s)).length;
 
@@ -545,9 +553,7 @@ async function checkUserPermissions(
       refreshStatus = hasOfflineAccess ? 'pass' : 'warn';
       const refreshEmoji = refreshStatus === 'pass' ? '✅' : '⚠️';
 
-      lines.push(
-        `${refreshEmoji} ${t.tokenRefreshLabel}: ${hasOfflineAccess ? t.tokenRefreshOn : t.tokenRefreshOff}`,
-      );
+      lines.push(`${refreshEmoji} ${t.tokenRefreshLabel}: ${hasOfflineAccess ? t.tokenRefreshOn : t.tokenRefreshOff}`);
     } else {
       // 没有用户授权
       lines.push(t.noUserAuth);

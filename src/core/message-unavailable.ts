@@ -9,7 +9,7 @@
  * 2) 后续针对该 message_id 的 API 调用直接短路，避免持续报错刷屏。
  */
 
-import type { LARK_ERROR} from './auth-errors';
+import type { LARK_ERROR } from './auth-errors';
 import { MESSAGE_TERMINAL_CODES } from './auth-errors';
 import { extractLarkApiCode } from './api-error';
 import { normalizeMessageId } from './targets';

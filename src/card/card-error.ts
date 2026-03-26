@@ -162,7 +162,8 @@ export function findMarkdownTablesOutsideCodeBlocks(text: string): MarkdownTable
     codeBlockMatch = codeBlockRegex.exec(text);
   }
 
-  const isInsideCodeBlock = (idx: number): boolean => codeBlockRanges.some((range) => idx >= range.start && idx < range.end);
+  const isInsideCodeBlock = (idx: number): boolean =>
+    codeBlockRanges.some((range) => idx >= range.start && idx < range.end);
 
   const tableRegex = /\|.+\|[\r\n]+\|[-:| ]+\|[\s\S]*?(?=\n\n|\n(?!\|)|$)/g;
   const matches: MarkdownTableMatch[] = [];

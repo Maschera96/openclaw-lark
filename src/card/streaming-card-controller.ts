@@ -228,9 +228,10 @@ export class StreamingCardController {
       const storePath = channelSession.resolveStorePath(sessionStorePath);
       const raw = await readFile(storePath, 'utf8');
       const parsed: unknown = JSON.parse(raw);
-      const store = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-        ? (parsed as Record<string, Record<string, unknown>>)
-        : {};
+      const store =
+        parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+          ? (parsed as Record<string, Record<string, unknown>>)
+          : {};
       const entry = store[key];
       if (!entry || typeof entry !== 'object') {
         log.debug('footer metrics lookup: session entry missing', {

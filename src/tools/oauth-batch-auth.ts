@@ -138,7 +138,9 @@ export function registerFeishuOAuthBatchAuthTool(api: OpenClawPluginApi): void {
 
           // 8. 调用共享的 executeAuthorize() 函数（复用 oauth.ts 逻辑）
           const alreadyGrantedScopes = appScopes.filter((s) => grantedScopes.has(s));
-          log.info(`scope check: total=${appScopes.length}, granted=${alreadyGrantedScopes.length}, missing=${missingScopes.length}`);
+          log.info(
+            `scope check: total=${appScopes.length}, granted=${alreadyGrantedScopes.length}, missing=${missingScopes.length}`,
+          );
           const scope = scopesToAuthorize.join(' ');
           const result = await executeAuthorize({
             account,

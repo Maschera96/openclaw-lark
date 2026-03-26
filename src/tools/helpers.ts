@@ -7,13 +7,13 @@
  * 提供所有工具通用的模式，减少重复代码。
  */
 
-import type { ClawdbotConfig, OpenClawPluginApi  } from 'openclaw/plugin-sdk';
+import type { ClawdbotConfig, OpenClawPluginApi } from 'openclaw/plugin-sdk';
 import type { Client as LarkSdkClient } from '@larksuiteoapi/node-sdk';
 import { getEnabledLarkAccounts, getLarkAccount } from '../core/accounts';
 import { LarkClient, getResolvedConfig } from '../core/lark-client';
 import type { LarkAccount } from '../core/types';
 import { getTicket } from '../core/lark-ticket';
-import type { ToolClient} from '../core/tool-client';
+import type { ToolClient } from '../core/tool-client';
 import { createToolClient } from '../core/tool-client';
 import { shouldRegisterTool } from '../core/tools-config';
 

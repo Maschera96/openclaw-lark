@@ -41,9 +41,7 @@ export const LARK_ERROR = {
 } as const;
 
 /** refresh token 端点可重试的错误码集合（服务端瞬时故障）。遇到后重试一次，仍失败则清 token。 */
-export const REFRESH_TOKEN_RETRYABLE: ReadonlySet<number> = new Set([
-  LARK_ERROR.REFRESH_SERVER_ERROR,
-]);
+export const REFRESH_TOKEN_RETRYABLE: ReadonlySet<number> = new Set([LARK_ERROR.REFRESH_SERVER_ERROR]);
 
 /** 消息终止错误码集合（撤回/删除），遇到后应停止对该消息的后续操作。 */
 export const MESSAGE_TERMINAL_CODES: ReadonlySet<number> = new Set([

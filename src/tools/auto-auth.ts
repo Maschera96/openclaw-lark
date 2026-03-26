@@ -682,7 +682,9 @@ async function sendAppScopeCard(params: {
       message:
         `应用缺少以下权限：${missingScopes.join(', ')}，` +
         `请管理员在开放平台开通后重试。` +
-        (appId ? `\n权限管理：${account.brand === 'lark' ? 'https://open.larksuite.com' : 'https://open.feishu.cn'}/app/${appId}/permission` : ''),
+        (appId
+          ? `\n权限管理：${account.brand === 'lark' ? 'https://open.larksuite.com' : 'https://open.feishu.cn'}/app/${appId}/permission`
+          : ''),
     });
   }
 
@@ -859,7 +861,7 @@ export async function handleCardAction(data: unknown, cfg: ClawdbotConfig, accou
         log.info(`merged user batch scopes into app auth completion: [${[...mergedScopes].join(', ')}]`);
       }
 
-        if (mergedScopes.size === 0) {
+      if (mergedScopes.size === 0) {
         // 无业务 scope 需要用户授权（例如 offline_access 是唯一缺失的应用权限，
         // 且没有其他工具产生用户授权需求）。跳过 OAuth，直接发合成消息触发 AI 重试，
         // 重试时工具会自然发现需要用户授权并发起正确的 OAuth 流程。

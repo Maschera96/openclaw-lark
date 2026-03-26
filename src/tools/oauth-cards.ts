@@ -31,8 +31,7 @@ const CARD_TEXTS = {
   zh_cn: {
     authRequired: '请授权以继续当前操作',
     goAuth: '前往授权',
-    expiresHint: (min: number) =>
-      `<font color='grey'>授权链接将在 ${min} 分钟后失效，届时需重新发起</font>`,
+    expiresHint: (min: number) => `<font color='grey'>授权链接将在 ${min} 分钟后失效，届时需重新发起</font>`,
     batchAuthHint:
       "<font color='grey'>💡如果你希望一次性授予所有插件所需要的权限，可以告诉我「授予所有用户权限」，我会协助你完成。</font>",
 
@@ -95,7 +94,6 @@ function i18nContent(zh: string, en: string): Record<Locale, string> {
 function i18nPlainText(zh: string, en: string) {
   return { tag: 'plain_text' as const, content: en, i18n_content: i18nContent(zh, en) };
 }
-
 
 // ---------------------------------------------------------------------------
 // Card builders
@@ -274,10 +272,7 @@ export function toInAppWebUrl(targetUrl: string, brand?: LarkBrand): string {
   const separator = targetUrl.includes('?') ? '&' : '?';
   const fullUrl = `${targetUrl}${separator}lk_meta=${lkMeta}`;
   const encoded = encodeURIComponent(fullUrl);
-  return (
-    `${applinkDomain(brand)}/client/web_url/open` +
-    `?mode=sidebar-semi&max_width=800&reload=false&url=${encoded}`
-  );
+  return `${applinkDomain(brand)}/client/web_url/open` + `?mode=sidebar-semi&max_width=800&reload=false&url=${encoded}`;
 }
 
 export function buildAuthSuccessCard(brand?: LarkBrand): Record<string, unknown> {

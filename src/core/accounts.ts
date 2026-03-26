@@ -9,12 +9,12 @@
  * unset fields fall back to the top-level defaults.
  */
 
-import { DEFAULT_ACCOUNT_ID, normalizeAccountId as _sdkNormalizeAccountId  } from 'openclaw/plugin-sdk/account-id';
+import { DEFAULT_ACCOUNT_ID, normalizeAccountId as _sdkNormalizeAccountId } from 'openclaw/plugin-sdk/account-id';
 
 const normalizeAccountId: (id: string) => string | undefined =
-    typeof _sdkNormalizeAccountId === 'function'
-        ? _sdkNormalizeAccountId
-        : (id: string) => id?.trim().toLowerCase() || undefined;
+  typeof _sdkNormalizeAccountId === 'function'
+    ? _sdkNormalizeAccountId
+    : (id: string) => id?.trim().toLowerCase() || undefined;
 
 import type { ClawdbotConfig } from 'openclaw/plugin-sdk';
 

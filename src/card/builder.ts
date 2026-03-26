@@ -186,12 +186,14 @@ export function formatElapsed(ms: number): string {
 function buildFooter(zhText: string, enText: string, isError?: boolean): CardElement[] {
   const zhContent = isError ? `<font color='red'>${zhText}</font>` : zhText;
   const enContent = isError ? `<font color='red'>${enText}</font>` : enText;
-  return [{
-    tag: 'markdown',
-    content: enContent,
-    i18n_content: { zh_cn: zhContent, en_us: enContent },
-    text_size: 'notation',
-  }];
+  return [
+    {
+      tag: 'markdown',
+      content: enContent,
+      i18n_content: { zh_cn: zhContent, en_us: enContent },
+      text_size: 'notation',
+    },
+  ];
 }
 
 export function compactNumber(value: number): string {
@@ -313,7 +315,14 @@ export function buildCardContent(
     elapsedMs?: number;
     isError?: boolean;
     isAborted?: boolean;
-    footer?: { status?: boolean; elapsed?: boolean; tokens?: boolean; cache?: boolean; context?: boolean; model?: boolean };
+    footer?: {
+      status?: boolean;
+      elapsed?: boolean;
+      tokens?: boolean;
+      cache?: boolean;
+      context?: boolean;
+      model?: boolean;
+    };
     footerMetrics?: FooterSessionMetrics;
   } = {},
 ): FeishuCard {
@@ -407,10 +416,18 @@ function buildCompleteCard(params: {
   reasoningText?: string;
   reasoningElapsedMs?: number;
   isAborted?: boolean;
-  footer?: { status?: boolean; elapsed?: boolean; tokens?: boolean; cache?: boolean; context?: boolean; model?: boolean };
+  footer?: {
+    status?: boolean;
+    elapsed?: boolean;
+    tokens?: boolean;
+    cache?: boolean;
+    context?: boolean;
+    model?: boolean;
+  };
   footerMetrics?: FooterSessionMetrics;
 }): FeishuCard {
-  const { text, toolCalls, elapsedMs, isError, reasoningText, reasoningElapsedMs, isAborted, footer, footerMetrics } = params;
+  const { text, toolCalls, elapsedMs, isError, reasoningText, reasoningElapsedMs, isAborted, footer, footerMetrics } =
+    params;
   const elements: CardElement[] = [];
 
   // Collapsible reasoning panel (before main content)

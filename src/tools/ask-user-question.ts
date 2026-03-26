@@ -195,11 +195,7 @@ function getSelectFieldName(questionIndex: number): string {
  *
  * @returns 卡片回调响应，或 undefined 表示非本模块的 action
  */
-export function handleAskUserAction(
-  data: unknown,
-  _cfg: ClawdbotConfig,
-  accountId: string,
-): unknown | undefined {
+export function handleAskUserAction(data: unknown, _cfg: ClawdbotConfig, accountId: string): unknown | undefined {
   let action: string | undefined;
   let operationId: string | undefined;
   let senderOpenId: string | undefined;
@@ -278,9 +274,7 @@ export function handleAskUserAction(
     if (operationId) {
       log.warn(`ask-user action: question ${operationId} not found (expired or already handled)`);
     }
-    return operationId
-      ? { toast: { type: 'info', content: '该问题已过期或已被回答' } }
-      : undefined;
+    return operationId ? { toast: { type: 'info', content: '该问题已过期或已被回答' } } : undefined;
   }
   if (ctx.submitted) {
     return { toast: { type: 'info', content: '该问题已提交，请等待处理' } };
@@ -359,10 +353,7 @@ export function handleAskUserAction(
  * them in a new turn. Follows the same pattern as oauth.ts for auth-complete
  * synthetic messages. Retries on failure to prevent answer loss.
  */
-async function injectAnswerSyntheticMessage(
-  ctx: QuestionContext,
-  answers: Record<string, string>,
-): Promise<void> {
+async function injectAnswerSyntheticMessage(ctx: QuestionContext, answers: Record<string, string>): Promise<void> {
   const syntheticMsgId = `${ctx.messageId}:ask-user-answer:${ctx.questionId}`;
 
   // Format answers as readable text for the AI
@@ -448,7 +439,9 @@ async function injectAnswerSyntheticMessage(
   // and re-arm TTL so the entry doesn't live forever.
   ctx.submitted = false;
   armTtlTimer(ctx, PENDING_QUESTION_TTL_MS);
-  log.error(`synthetic message injection failed after ${INJECT_MAX_RETRIES + 1} attempts for question ${ctx.questionId}: ${lastError}`);
+  log.error(
+    `synthetic message injection failed after ${INJECT_MAX_RETRIES + 1} attempts for question ${ctx.questionId}: ${lastError}`,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -486,10 +479,7 @@ function readFormMultiSelect(formValue: Record<string, unknown>, fieldName: stri
 /**
  * Build a left-right row: label on left, control on right.
  */
-function buildLabeledRow(
-  label: Record<string, unknown>,
-  control: Record<string, unknown>,
-): Record<string, unknown> {
+function buildLabeledRow(label: Record<string, unknown>, control: Record<string, unknown>): Record<string, unknown> {
   return {
     tag: 'column_set',
     flex_mode: 'stretch',
@@ -520,10 +510,7 @@ function buildLabeledRow(
  * All controls use `name` for form_value collection. No `value` property
  * is set on interactive components — they do not fire individual callbacks.
  */
-function buildQuestionFormElements(
-  q: QuestionItem,
-  questionIndex: number,
-): Record<string, unknown>[] {
+function buildQuestionFormElements(q: QuestionItem, questionIndex: number): Record<string, unknown>[] {
   const elems: Record<string, unknown>[] = [];
   const labelMd = { tag: 'markdown', content: `**${q.header}**` };
 
@@ -718,10 +705,7 @@ function buildExpiredCard(questions: QuestionItem[]): Record<string, unknown> {
       elements.push({ tag: 'hr' });
     }
     elements.push(
-      buildLabeledRow(
-        { tag: 'markdown', content: `**${q.header}**` },
-        { tag: 'markdown', content: q.question },
-      ),
+      buildLabeledRow({ tag: 'markdown', content: `**${q.header}**` }, { tag: 'markdown', content: q.question }),
     );
   }
 

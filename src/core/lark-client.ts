@@ -185,7 +185,11 @@ export class LarkClient {
    */
   static fromAccount(account: LarkAccount): LarkClient {
     const existing = cache.get(account.accountId);
-    if (existing && existing.account.appId === account.appId && credentialsEqual(existing.account.appSecret, account.appSecret)) {
+    if (
+      existing &&
+      existing.account.appId === account.appId &&
+      credentialsEqual(existing.account.appSecret, account.appSecret)
+    ) {
       return existing;
     }
     // Credentials changed — tear down the stale instance before replacing it.
