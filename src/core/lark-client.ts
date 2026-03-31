@@ -135,6 +135,9 @@ export class LarkClient {
   /** Registry mapping accountId -> botOpenId for cross-bot @mentions. */
   private static _botOpenIdRegistry: Map<string, string> = new Map();
 
+  /** Registry mapping accountId -> botName (from /bot/v3/info API). */
+  private static _botNameRegistry: Map<string, string> = new Map();
+
   /** Registry mapping accountId -> WebSocket event handlers for cross-bot @mentions. */
   private static _handlersRegistry: Map<
     string,
@@ -208,6 +211,14 @@ export class LarkClient {
   static registerBotOpenId(accountId: string, botOpenId: string): void {
     LarkClient._botOpenIdRegistry.set(accountId, botOpenId);
     log.info(`[跨Bot] 注册Bot: accountId=${accountId}, botOpenId=${botOpenId}`);
+  }
+
+  /**
+   * Get the API-returned bot name for an account (from probe /bot/v3/info).
+   * Returns `undefined` if the account hasn't been probed yet.
+   */
+  static getBotName(accountId: string): string | undefined {
+    return LarkClient._botNameRegistry.get(accountId);
   }
 
   /**
@@ -368,6 +379,9 @@ export class LarkClient {
       // Register bot open ID for cross-bot @mentions
       if (this._botOpenId) {
         LarkClient.registerBotOpenId(this.accountId, this._botOpenId);
+        if (this._botName) {
+          LarkClient._botNameRegistry.set(this.accountId, this._botName);
+        }
       }
 
       const result: FeishuProbeResult = {
