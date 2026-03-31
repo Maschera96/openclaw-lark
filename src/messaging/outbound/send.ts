@@ -9,11 +9,14 @@ import type { ClawdbotConfig } from 'openclaw/plugin-sdk';
 import type { FeishuSendResult, MentionInfo  } from '../types';
 import { createAccountScopedConfig } from '../../core/accounts';
 import { LarkClient } from '../../core/lark-client';
+import { larkLogger } from '../../core/lark-logger';
 import { normalizeFeishuTarget, normalizeMessageId, resolveReceiveIdType } from '../../core/targets';
 import { runWithMessageUnavailableGuard } from '../../core/message-unavailable';
 import { optimizeMarkdownStyle } from '../../card/markdown-style';
 import { buildMentionedCardContent, buildMentionedMessage } from '../inbound/mention';
 import { isBotOpenId, triggerBotToBotMessage } from '../cross-bot/trigger';
+
+const log = larkLogger('outbound/send');
 
 // ---------------------------------------------------------------------------
 // Types
@@ -143,8 +146,14 @@ export async function sendMessageFeishu(params: SendFeishuMessageParams): Promis
     let messageText = text;
 
     // Apply mention prefix if targets are provided.
+    // Skip mentions that are already inline as <at> tags to avoid duplication.
     if (mentions && mentions.length > 0) {
-      messageText = buildMentionedMessage(mentions, messageText);
+      const missingMentions = mentions.filter(
+        (m) => !messageText.includes(`<at user_id="${m.openId}">`),
+      );
+      if (missingMentions.length > 0) {
+        messageText = buildMentionedMessage(missingMentions, messageText);
+      }
     }
 
     // Convert markdown tables to Feishu-compatible format.
@@ -186,7 +195,6 @@ export async function sendMessageFeishu(params: SendFeishuMessageParams): Promis
     };
 
     // ========== 跨Bot消息触发 ==========
-    // 检测mentions中是否有@其他bot，如果有则触发跨bot消息
     if (mentions && mentions.length > 0) {
       const mentionedBotOpenIds = mentions
         .filter((m) => isBotOpenId(m.openId))
@@ -201,6 +209,7 @@ export async function sendMessageFeishu(params: SendFeishuMessageParams): Promis
             senderBotOpenId,
             mentionedBotOpenIds,
             chatId: result.chatId,
+            replyToMessageId: result.messageId || undefined,
             content: contentPayload,
             messageType: 'post',
             threadId: undefined,
@@ -257,6 +266,7 @@ export async function sendMessageFeishu(params: SendFeishuMessageParams): Promis
           senderBotOpenId,
           mentionedBotOpenIds,
           chatId: result.chatId,
+          replyToMessageId: result.messageId || undefined,
           content: contentPayload,
           messageType: 'post',
           threadId: undefined,

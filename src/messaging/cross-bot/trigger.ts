@@ -37,6 +37,8 @@ export interface TriggerBotToBotMessageParams {
   mentionedBotOpenIds: string[];
   /** Group chat ID. */
   chatId: string;
+  /** Real Feishu message ID of the sender bot's message (used as reply target). */
+  replyToMessageId?: string;
   /** Original message content (without @mentions). */
   content: string;
   /** Original message type. */
@@ -61,6 +63,7 @@ export async function triggerBotToBotMessage(
     senderBotOpenId,
     mentionedBotOpenIds,
     chatId,
+    replyToMessageId,
     content,
     messageType,
     threadId,
@@ -100,6 +103,7 @@ export async function triggerBotToBotMessage(
       senderBotOpenId,
       targetBotOpenId,
       chatId,
+      replyToMessageId,
       content,
       messageType,
       threadId,
@@ -127,6 +131,8 @@ interface CreateSyntheticMessageEventParams {
   senderBotOpenId: string;
   targetBotOpenId: string;
   chatId: string;
+  /** Real Feishu message ID to use (so target bot can reply to it). */
+  replyToMessageId?: string;
   content: string;
   messageType: string;
   threadId?: string;
@@ -141,17 +147,17 @@ interface CreateSyntheticMessageEventParams {
 function createSyntheticMessageEvent(
   params: CreateSyntheticMessageEventParams
 ): FeishuMessageEvent {
-  const { senderBotOpenId, chatId, content, messageType, threadId, rootId } =
+  const { senderBotOpenId, targetBotOpenId, chatId, replyToMessageId, content, messageType, threadId, rootId } =
     params;
 
-  // Generate unique message ID with prefix
-  const syntheticMessageId =
-    `${SYNTHETIC_MESSAGE_ID_PREFIX}${Date.now()}_${Math.random()
+  // Use real message ID if available (so target bot can reply to a real Feishu message),
+  // otherwise fall back to a synthetic ID.
+  const messageId = replyToMessageId
+    ?? `${SYNTHETIC_MESSAGE_ID_PREFIX}${Date.now()}_${Math.random()
       .toString(36)
       .slice(2, 9)}`;
 
   return {
-    app_id: '', // Synthetic messages skip app_id validation
     sender: {
       sender_id: {
         open_id: senderBotOpenId,
@@ -159,19 +165,19 @@ function createSyntheticMessageEvent(
       sender_type: 'app', // Sender is an app (bot)
     },
     message: {
-      message_id: syntheticMessageId,
+      message_id: messageId,
       chat_id: chatId,
       thread_id: threadId,
       root_id: rootId,
       chat_type: 'group',
       message_type: messageType,
       content,
-      create_time: Math.floor(Date.now() / 1000).toString(),
-      update_time: Math.floor(Date.now() / 1000).toString(),
+      create_time: Date.now().toString(),
+      update_time: Date.now().toString(),
       mentions: [
         {
-          key: `@_user_${senderBotOpenId}`,
-          id: { open_id: senderBotOpenId },
+          key: `@_user_${targetBotOpenId}`,
+          id: { open_id: targetBotOpenId },
           name: 'Bot',
         },
       ],
